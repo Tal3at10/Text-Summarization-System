@@ -1,0 +1,14 @@
+datasets
+nltk
+spacy
+scikit-learn
+gensim
+transformers
+torch
+rouge-score
+bert-score
+matplotlib
+seaborn
+pandas
+numpy
+sentence-transformers

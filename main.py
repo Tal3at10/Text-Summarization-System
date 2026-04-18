@@ -19,25 +19,21 @@ from src.baseline import summarize_tfidf, summarize_hybrid
 from src.advanced import T5Summarizer, BERTExtractiveSummarizer, BARTSummarizer
 from src.evaluate import evaluate_summary
 
-# -- Mock Dataset (Real CNN/DailyMail Samples) -------------------------------
-MOCK_ARTICLES = [
-    {
-        "id": "sample_1",
-        "article": "The US and China have reached a historic agreement on climate change. Both nations committed to significantly reducing carbon emissions by 2030. President Biden stated that this is a critical step for the planet's future. China's President Xi echoed the sentiment, emphasizing global cooperation. The deal includes goals for renewable energy and phasing out coal power plants. Environmental groups have praised the deal while calling for even more aggressive targets.",
-        "highlights": "United States and China agree on historic climate deal to reduce emissions by 2030. Presidents Biden and Xi emphasize global cooperation. Deal includes targets for renewable energy and coal phase-out."
-    },
-    {
-        "id": "sample_2",
-        "article": "NASA's James Webb Space Telescope has captured a stunning new image of a distant nebula. The image provides unprecedented detail of star formation in the Pillars of Creation. Astronomers are excited about the new data revealing the chemical composition of cosmic dust. The telescope, launched in 2021, is the most powerful space observatory ever built. It is located 1.5 million kilometers from Earth at the Second Lagrange Point. This discovery helps scientists understand how stars are born and evolve in our galaxy.",
-        "highlights": "James Webb Telescope captures detailed image of the Pillars of Creation. Image reveals new data on star formation and cosmic dust. Observatory is located 1.5 million kilometers from Earth."
-    }
-]
-
+# -- Dataset Loading --------------------------------------------------------
+DATA_FILE = "data/test_samples.csv"
 OUTPUT_DIR = "outputs"
-RATIO = 0.4  # Increased from 0.3 to get slightly longer extractive summaries -> better ROUGE overlap
+RATIO = 0.4  
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(f"{OUTPUT_DIR}/reports", exist_ok=True)
+
+def load_data():
+    """Load the test dataset from CSV."""
+    if not os.path.exists(DATA_FILE):
+        print(f"Error: Dataset not found at {DATA_FILE}")
+        return []
+    df = pd.read_csv(DATA_FILE)
+    return df.to_dict('records')
 
 def run_accuracy_test():
     print("Starting REAL TEST & PROCESS DEMO (Accuracy Evaluation)...")
@@ -55,14 +51,16 @@ def run_accuracy_test():
 
     # 2. Process Articles
     comparison_data = []
-    articles = [m["article"] for m in MOCK_ARTICLES]
-    references = [m["highlights"] for m in MOCK_ARTICLES]
-    ids = [m["id"] for m in MOCK_ARTICLES]
+    test_entries = load_data()
+    
+    if not test_entries:
+        print("No data to process. System exiting.")
+        return
 
-    for i in range(len(articles)):
-        article = articles[i]
-        ref = references[i]
-        art_id = ids[i]
+    for i, entry in enumerate(test_entries):
+        article = entry["article"]
+        ref = entry["highlights"]
+        art_id = entry.get("id", f"sample_{i+1}")
 
         print(f"\n{'='*70}")
         print(f"Processing Sample {i+1}...")

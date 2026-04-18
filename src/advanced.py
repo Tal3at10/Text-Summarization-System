@@ -44,13 +44,27 @@ class BARTSummarizer:
     def summarize(
         self,
         article_text: str,
-        max_length: int = 150,
-        min_length: int = 50,
+        max_length: int = None,
+        min_length: int = None,
         num_beams: int = 4,
     ) -> dict:
         """Generate an abstractive summary using BART."""
         if not article_text or article_text.strip() == "":
             return {"summary": "", "model": self.model_name, "params": {}}
+            
+        # Dynamic length calculation to ensure ~15-35% compression ratio
+        # Only apply dynamic calc if min/max length were not explicitly provided
+        word_count = len(article_text.split())
+        
+        if max_length is None:
+            max_length = max(30, min(250, int(word_count * 0.35)))
+        
+        if min_length is None:
+            min_length = max(10, int(word_count * 0.15))
+
+        # Ensure max_length > min_length
+        if max_length <= min_length:
+            max_length = min_length + 10
 
         # Prepare input
         inputs = self.tokenizer(
